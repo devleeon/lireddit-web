@@ -1,0 +1,2 @@
+export const BACKGROUND_THEMECOLOR = "#276749";
+export const TEXT_THEMECOLOR = "#F0FFF4";

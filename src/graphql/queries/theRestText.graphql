@@ -1,0 +1,5 @@
+query theRestText($id: Int!) {
+  post(id: $id) {
+    theRestText
+  }
+}

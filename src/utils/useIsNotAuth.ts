@@ -1,0 +1,13 @@
+import Router, { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useMeQuery } from "../generated/graphql";
+
+export const useIsNotAuth = () => {
+  const [{ data, fetching }] = useMeQuery();
+  const router = useRouter();
+  useEffect(() => {
+    if (!data?.me && !fetching) {
+      router.replace(`/login?from=${router.pathname}`);
+    }
+  }, [fetching, data, router]);
+};
