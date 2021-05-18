@@ -10,10 +10,11 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { toErrorMap } from "../utils/toErrorMap";
 import { BACKGROUND_THEMECOLOR, TEXT_THEMECOLOR } from "../constants";
 import { useIsAuth } from "../utils/useIsAuth";
+import { withApollo } from "../utils/withApollo";
 interface registerProps {}
 const Register: React.FC<registerProps> = ({}) => {
   // 2nd element of useMutation is name of it
-  const [, register] = useRegisterMutation();
+  const [register] = useRegisterMutation();
   const router = useRouter();
   useIsAuth();
   return (
@@ -22,7 +23,7 @@ const Register: React.FC<registerProps> = ({}) => {
         initialValues={{ username: "", password: "", email: "" }}
         // setErrors() is from formik
         onSubmit={async (values, { setErrors }) => {
-          const response = await register({ input: values });
+          const response = await register({ variables: { input: values } });
           if (response.data?.register.errors) {
             setErrors(toErrorMap(response.data.register.errors));
           } else if (response.data?.register.user) {
@@ -76,4 +77,5 @@ const Register: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(Register);
+// export default withUrqlClient(createUrqlClient)(Register);
+export default withApollo({ ssr: false })(Register);

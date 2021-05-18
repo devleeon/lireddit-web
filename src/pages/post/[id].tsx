@@ -5,21 +5,22 @@ import { useRouter } from "next/router";
 import { usePostQuery } from "../../generated/graphql";
 import { Layout } from "../../components/Layout";
 import { Heading, Box, Flex } from "@chakra-ui/core";
+import { withApollo } from "../../utils/withApollo";
 
 const Post = ({}) => {
   const router = useRouter();
   console.log(router);
   const intId =
     typeof router.query.id === "string" ? parseInt(router.query.id) : -1;
-  const [{ data, error, fetching }] = usePostQuery({
+  const { data, error, loading } = usePostQuery({
     // -1 is a signal to pause
-    pause: intId === -1,
+    skip: intId === -1,
     variables: {
       id: intId,
     },
   });
 
-  if (fetching) {
+  if (loading) {
     return (
       <Layout>
         <div>loading...</div>
@@ -50,4 +51,5 @@ const Post = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Post);
+// export default withUrqlClient(createUrqlClient, { ssr: true })(Post);
+export default withApollo({ ssr: true })(Post);

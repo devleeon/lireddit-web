@@ -20,8 +20,8 @@ interface DeletePostProps {
 }
 
 export const PostMenu: React.FC<DeletePostProps> = ({ post }) => {
-  const [, deletePost] = useDeletePostMutation();
-  const [{ data }] = useMeQuery();
+  const [deletePost] = useDeletePostMutation();
+  const { data } = useMeQuery();
 
   const toast = useToast();
 
@@ -42,7 +42,13 @@ export const PostMenu: React.FC<DeletePostProps> = ({ post }) => {
             </NextLink>
             <MenuItem
               onClick={async () => {
-                const success = await deletePost({ id: post!.id });
+                const success = await deletePost({
+                  variables: { id: post!.id },
+                  update: (cache) => {
+                    // validate === evict
+                    cache.evict({ id: "Post:" + post!.id });
+                  },
+                });
                 if (success.data?.deletePost) {
                   toast({
                     position: "top",

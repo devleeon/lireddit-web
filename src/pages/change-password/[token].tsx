@@ -12,10 +12,11 @@ import { useChangePasswordMutation } from "../../generated/graphql";
 import { createUrqlClient } from "../../utils/createUrqlClient";
 import { toErrorMap } from "../../utils/toErrorMap";
 import { BACKGROUND_THEMECOLOR, TEXT_THEMECOLOR } from "../../constants";
+import { withApollo } from "../../utils/withApollo";
 
 const ChagePassword: NextPage = () => {
   const router = useRouter();
-  const [, changePassword] = useChangePasswordMutation();
+  const [changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
   return (
     <Wrapper variant="small">
@@ -29,9 +30,13 @@ const ChagePassword: NextPage = () => {
             });
           }
           const response = await changePassword({
-            token:
-              typeof router.query.token === "string" ? router.query.token : "",
-            newPassword: values.newPassword2,
+            variables: {
+              token:
+                typeof router.query.token === "string"
+                  ? router.query.token
+                  : "",
+              newPassword: values.newPassword2,
+            },
           });
           if (response.data?.changePassword.errors) {
             const errorMap = toErrorMap(response.data.changePassword.errors);
@@ -100,4 +105,4 @@ const ChagePassword: NextPage = () => {
 //   };
 // };
 
-export default withUrqlClient(createUrqlClient, { ssr: false })(ChagePassword);
+export default withApollo({ ssr: false })(ChagePassword);

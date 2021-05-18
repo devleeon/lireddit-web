@@ -17,7 +17,7 @@ export const CreatePost: React.FC<CreatePostProps> = ({
   handleToggle,
   show,
 }) => {
-  const [, createPost] = useCreatePostMutation();
+  const [createPost] = useCreatePostMutation();
   const toast = useToast();
   // const router = useRouter();
   return (
@@ -25,9 +25,14 @@ export const CreatePost: React.FC<CreatePostProps> = ({
       initialValues={{ title: "", text: "" }}
       // setErrors() is from formik
       onSubmit={async (values, { setErrors }) => {
-        const response = await createPost({ input: values });
-        if (response.data?.createPost.errors) {
-          setErrors(toErrorMap(response.data.createPost.errors));
+        const { data, errors } = await createPost({
+          variables: { input: values },
+          update: (cache, {}) => {
+            cache.evict({ fieldName: "posts:{}" });
+          },
+        });
+        if (errors) {
+          setErrors(toErrorMap(data.createPost.errors));
         } else {
           handleToggle();
           values.title = "";

@@ -9,11 +9,12 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { useState } from "react";
 import { Layout } from "../components/Layout";
 import { BACKGROUND_THEMECOLOR, TEXT_THEMECOLOR } from "../constants";
+import { withApollo } from "../utils/withApollo";
 
 interface loginProps {}
 const ForgotPassword: React.FC<loginProps> = ({}) => {
   // 2nd element of useMutation is name of it
-  const [, forgotPassword] = useForgotPasswordMutation();
+  const [forgotPassword] = useForgotPasswordMutation();
   const [sendEmail, setSendEmail] = useState("");
   const router = useRouter();
   return (
@@ -28,7 +29,9 @@ const ForgotPassword: React.FC<loginProps> = ({}) => {
             setErrors({ email: "Type the email you've registered with" });
             return;
           }
-          const response = await forgotPassword({ email: values.email });
+          const response = await forgotPassword({
+            variables: { email: values.email },
+          });
           if (!response.data?.forgotPassword) {
             setErrors({ email: "Type the email you've registered with" });
             return;
@@ -60,4 +63,5 @@ const ForgotPassword: React.FC<loginProps> = ({}) => {
     </Layout>
   );
 };
-export default withUrqlClient(createUrqlClient)(ForgotPassword);
+// export default withUrqlClient(createUrqlClient)(ForgotPassword);
+export default withApollo({ ssr: false })(ForgotPassword);

@@ -3,11 +3,11 @@ import { useEffect } from "react";
 import { useMeQuery } from "../generated/graphql";
 
 export const useIsAuth = () => {
-  const [{ data, fetching }] = useMeQuery();
+  const { data, loading } = useMeQuery();
   const router = useRouter();
   useEffect(() => {
-    if (data?.me && !fetching) {
+    if (data?.me && !loading) {
       router.replace("/");
     }
-  }, [fetching, data, router]);
+  }, [loading, data, router]);
 };

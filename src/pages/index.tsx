@@ -15,17 +15,22 @@ import { Layout } from "../components/Layout";
 import { CreatePost } from "../components/Posts/CreatePost";
 import { PostMenu } from "../components/Posts/PostMenu";
 import { UpdootSection } from "../components/Posts/UpdootSection";
-import { useMeQuery, usePostsQuery } from "../generated/graphql";
+import { PostsQuery, useMeQuery, usePostsQuery } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
+import { withApollo } from "../utils/withApollo";
 
 const Index = () => {
-  const [variables, setVariables] = useState({
-    limit: 10,
-    cursor: null as null | string,
-  });
-  const [{ data: meData }] = useMeQuery();
-  const [{ data, fetching }] = usePostsQuery({
-    variables,
+  // const [variables, setVariables] = useState({
+  //   limit: 10,
+  //   cursor: null as null | string,
+  // });
+  const { data: meData } = useMeQuery();
+  const { data, error, loading, fetchMore, variables } = usePostsQuery({
+    variables: {
+      limit: 10,
+      cursor: null,
+    },
+    notifyOnNetworkStatusChange: true,
   });
   const [show, setShow] = useState(false);
 
@@ -33,7 +38,7 @@ const Index = () => {
   const handleToggle = () => {
     setShow(!show);
   };
-  if (!fetching && !data) {
+  if (!loading && !data) {
     // no data when loading is done.
     // => something went wrong
     return (
@@ -66,7 +71,7 @@ const Index = () => {
       </Collapse>
 
       <br />
-      {!data && fetching ? (
+      {!data && loading ? (
         <div>loading...</div>
       ) : (
         <Stack spacing={8}>
@@ -108,14 +113,37 @@ const Index = () => {
         <Flex>
           <Button
             onClick={() => {
-              setVariables({
-                limit: 5,
-                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
-
-                // stringifyVariables(data.posts[data.posts.length - 1].id),
+              fetchMore({
+                variables: {
+                  limit: variables?.limit,
+                  cursor:
+                    data.posts.posts[data.posts.posts.length - 1].createdAt,
+                },
+                // updateQuery: (
+                //   previousValue,
+                //   { fetchMoreResult }: { fetchMoreResult: PostsQuery }
+                // ): PostsQuery => {
+                //   if (fetchMoreResult) {
+                //     return previousValue as PostsQuery;
+                //   }
+                //   return {
+                //     __typename: "Query",
+                //     posts: {
+                //       __typename: "PaginatedPosts",
+                //       hasMore: fetchMoreResult.posts.hasMore,
+                //       posts: [
+                //         ...previousValue.posts.posts,
+                //         ...fetchMoreResult.posts.posts,
+                //       ],
+                //     },
+                //   };
+                // },
               });
+              // setVariables({
+              //   // stringifyVariables(data.posts[data.posts.length - 1].id),
+              // });
             }}
-            isLoading={fetching}
+            isLoading={loading}
             m="auto"
             my={8}
           >
@@ -127,4 +155,5 @@ const Index = () => {
   );
 };
 // if you wanna use urql then add the line below
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+// export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default withApollo({ ssr: true })(Index);

@@ -4,16 +4,18 @@ import NextLink from "next/link";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
 import { BACKGROUND_THEMECOLOR, TEXT_THEMECOLOR } from "../constants";
+import { useApolloClient } from "@apollo/client";
 
 interface NavBarProps {}
 
 export const NavBar: React.FC<NavBarProps> = ({}) => {
-  const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
-  const [{ fetching, data }] = useMeQuery({
-    pause: isServer(),
+  const [logout, { loading: logoutFetching }] = useLogoutMutation();
+  const apolloClient = useApolloClient();
+  const { loading, data } = useMeQuery({
+    skip: isServer(),
   });
   let body = <></>;
-  if (fetching) {
+  if (loading) {
     //data is loading
     body = (
       <>
@@ -50,7 +52,10 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
           backgroundColor={BACKGROUND_THEMECOLOR}
           color={TEXT_THEMECOLOR}
           isLoading={logoutFetching}
-          onClick={() => logout()}
+          onClick={async () => {
+            await logout();
+            apolloClient.resetStore();
+          }}
           variant="link"
         >
           log out

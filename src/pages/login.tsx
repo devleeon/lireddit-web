@@ -2,7 +2,7 @@ import { Box, Button, Divider, Flex, Link } from "@chakra-ui/core";
 import { Form, Formik } from "formik";
 import React from "react";
 import { InputField } from "../components/InputField";
-import { useLoginMutation } from "../generated/graphql";
+import { MeDocument, MeQuery, useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/router";
 import { withUrqlClient } from "next-urql";
@@ -11,11 +11,12 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { Layout } from "../components/Layout";
 import { BACKGROUND_THEMECOLOR, TEXT_THEMECOLOR } from "../constants";
 import { useIsAuth } from "../utils/useIsAuth";
+import { withApollo } from "../utils/withApollo";
 
 interface loginProps {}
 const Login: React.FC<loginProps> = ({}) => {
   // 2nd element of useMutation is name of it
-  const [, login] = useLoginMutation();
+  const [login] = useLoginMutation();
   const router = useRouter();
   useIsAuth();
   return (
@@ -40,7 +41,19 @@ const Login: React.FC<loginProps> = ({}) => {
         initialValues={{ usernameOrEmail: "", password: "" }}
         // setErrors() is from formik
         onSubmit={async (values, { setErrors }) => {
-          const response = await login(values);
+          const response = await login({
+            variables: values,
+            update: (cache, { data }) => {
+              cache.writeQuery<MeQuery>({
+                query: MeDocument,
+                data: {
+                  __typename: "Query",
+                  me: data?.login.user,
+                },
+              });
+              cache.evict({ fieldName: "posts:{}" });
+            },
+          });
           if (response.data?.login.errors) {
             setErrors(toErrorMap(response.data.login.errors));
           } else if (response.data?.login.user) {
@@ -94,4 +107,5 @@ const Login: React.FC<loginProps> = ({}) => {
     </Layout>
   );
 };
-export default withUrqlClient(createUrqlClient)(Login);
+// export default withUrqlClient(createUrqlClient)(Login);
+export default withApollo({ ssr: false })(Login);

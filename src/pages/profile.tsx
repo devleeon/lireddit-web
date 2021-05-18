@@ -3,6 +3,7 @@ import { withUrqlClient } from "next-urql";
 import React from "react";
 import { Layout } from "../components/Layout";
 import { createUrqlClient } from "../utils/createUrqlClient";
+import { withApollo } from "../utils/withApollo";
 
 interface profileProps {}
 const Profile: React.FC<profileProps> = ({}) => {
@@ -13,4 +14,5 @@ const Profile: React.FC<profileProps> = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(Profile);
+// export default withUrqlClient(createUrqlClient)(Profile);
+export default withApollo({ ssr: false })(Profile);
